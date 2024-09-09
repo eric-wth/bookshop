@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  users:
+    build: ./services/users
+    command: python manage.py run -h 0.0.0.0
+    volumes:
+      - ./services/users/:/usr/src/app/
+    ports:
+      - 5001:5000
+    env_file:
+      - ./.env.dev
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=hello_flask
+      - POSTGRES_PASSWORD=hello_flask
+      - POSTGRES_DB=hello_flask_dev
+
+volumes:
+  postgres_data:
