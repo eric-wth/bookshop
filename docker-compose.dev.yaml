@@ -8,8 +8,27 @@ services:
       - ./services/users/:/usr/src/app/
     ports:
       - 5001:5000
-    env_file:
-      - ./.env.dev
+    environment:
+      - FLASK_DEBUG=1
+      - APP_SETTINGS=project.config.DevelopmentConfig
+      - DATABASE_URL=postgres://postgres:postgres@users-db:5432/users_dev
+      - DATABASE_TEST_URL=postgres://postgres:postgres@users-db:5432/users_test
+      - SECRET_KEY=my_precious
+
+  books:
+    build: ./services/books
+    command: python manage.py run -h 0.0.0.0
+    volumes:
+      - ./services/users/:/usr/src/app/
+    ports:
+      - 5001:5000
+    environment:
+      - FLASK_DEBUG=1
+      - APP_SETTINGS=project.config.DevelopmentConfig
+      - USERS_SERVICE_URL=http://users:5000
+      - SECRET_KEY=my_precious
+      - DATABASE_URL=postgres://postgres:postgres@books-db:5432/books_dev
+
   db:
     image: postgres:15
     volumes:
@@ -18,6 +37,18 @@ services:
       - POSTGRES_USER=hello_flask
       - POSTGRES_PASSWORD=hello_flask
       - POSTGRES_DB=hello_flask_dev
+
+  nginx:
+    container_name: nginx
+    build:
+      context: ./services/nginx
+      dockerfile: Dockerfile-dev
+    restart: always
+    ports:
+      - 80:80
+    depends_on:
+      - users
+      - books
 
 volumes:
   postgres_data:
